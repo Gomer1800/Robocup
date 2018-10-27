@@ -37,7 +37,7 @@ class rrt():
 
         self.obstacle_List = obstacle_List
 
-        def computeRRT (self) :
+        def computeSolutionPath (self) :
             # 1) Initialize PointList with start_Position
             point_List = [self.start_Point]
             # WHILE LOOP
@@ -46,20 +46,69 @@ class rrt():
                 # 2) generateRandomSample (), returns random sample Point or biased Point
                 sample_Point = generateRandomSamplePoint ()
                 # 3) getClosestPointIndex( sample Point  ), returns index of Point in pointList closest to given sample point
-                closest_Point_Index = getClosestPointIndex( sample_Point)
-            # 4) growTree( new_Point , closest_Point_Index ) , creates new Point and grows tree
-            # 5) collisionDetected ( nearby Point ), returns boolean based on check if nearby point collides with osbtacle
-            # 5a) If 5 is true , restart loop
-            # 5b) If 5 is false, proceed to 6
-            # 6) add new_Point to point_List
-            # 7) goalStatus( new_Point) , returns boolean based on check of distance from goal_Point to new_Point
-            # 7a) If 7 is true, proceed to 8
-            # 7b) if 7 is false, repeat cycle, return to 2
-            # Trace backwards towards start Point
-            # 8) traceFinalPath() , returns list of Point coordinate pairs from endPoint to startPoint 
+                closest_Point_Index = getClosestPointIndex( point_List, sample_Point)
+                # 4) growTree( new_Point , closest_Point_Index ) , creates new Point and grows tree at closes_Point_index in point_List
+                new_Point = growTree( sample_Point, closest_Point_Index )
+                # 5) collisionDetected ( nearby Point ), returns boolean based on check if nearby point collides with osbtacle
+                # 5a) If 5 is true , next loop iteration 
+                # 5b) If 5 is false, proceed to 6 
+                if collisionDetected( new_Point) :
+                    continue 
+                
+                # 6) add new_Point to point_List
+                point_List.append( new_Point)
+                # 7) goalStatus( new_Point) , returns boolean based on check of distance from goal_Point to new_Point
+                # 7a) If 7 is true, break while loop
+                # 7b) if 7 is false, next loop iteration
+                if getGoalStatus( new_Point) == True :
+                    reached_Goal = True
 
-        def getClosestPointIndex(self, sample_Point) :
-           placeHolder = 1
+            # Trace backwards towards start Point for solution path
+            # 8) traceFinalPath() , returns list of Point coordinate pairs from endPoint to startPoint
+            solution_Path = traceFinalPath( point_List)
+            return solution_Path
+
+######## METHODS
+        def traceFinalPath(self, point_List) :
+            solution_Points = [point_List[-1]]
+            solution_Coordinate_Pairs = [ [point_List[-1].x, point_List[-1].y] ]
+            for this_Point.preceding_Point_Index in solution_Points is not None:
+                solution_Points.append( point_List( this_Point.preceding_Point_Index))
+                solution_Coordinate_Pairs.append( [ point_List(this_Point.preceding_Point_Index).x , point_List( this_Point.preceding_Point_Index).y ] )
+
+            solution_Coordinate_Pairs.append( [ self.start_Point.x , self.start_Point.y ] )
+            return solution_Coordinate_Pairs
+
+        def getGoalStatus(self, new_Point) :
+            if self.goal_Point.x == new_Point.x & self.goal_Point.y == new_Point.y :
+                return True
+            else : return False
+
+        def collisionDetected(self, new_Point) :
+            for (x , y, obstacle_Radius) in self.obstacle_List :
+                dx = x - new_Point.x
+                dy = y - new_Point.y
+                distance_to_Obstacle = math.sqrt( dx**2, dy**2)
+                if distance_to_Obstacle <= obstacle_Radius :
+                    return True
+                else : return False
+
+
+        def growTree(self, sample_Point, closest_Point_Index ) :
+            growth_Angle = math.atan2( (sample_Point.y - point_List(closest_Point_Index).y) , (sample_Point.x - point_List(closest_Point_Index).x))
+            new_Point = Point ( self.growth_Factor * math.cos( growth_Angle), self.growth_Factor * math.sin( growth_Angle))
+            newPoint.preceding_Point_Index = closest_Point_Index
+
+            return newPoint
+
+
+        def getClosestPointIndex(self, point_List, sample_Point) :
+            distance_to_Sample = []
+            for this_Point in point_List :
+                distance_to_Sample.append( math.sqrt( (sample_Point.x - this_Point.x )**2 + (sample_Point.y - this_Point.y)**2 )) 
+
+            index = distance_to_Sample.index( min(distance_to_Sample))
+            return index
 
         def generateRandomSamplePoint(self) : # generateRandomSample (), returns random sample Point or biased Point
             if random.randint(0,100) > goal_sampleRate :
@@ -68,25 +117,6 @@ class rrt():
             else : sample_Point = Point ( self.goal_Point.x , self.goal_Point.y) # Biased Point
 
             return sample_Point
-
-
-        def DrawGraph(self, rnd=None):
-            plt.clf() # clears figure w/ all is axes, but leaves the window opened
-            if rnd is not None:
-                plt.plot(rnd[0], rnd[1], "r+") # displays cursor from random sampling
-            for node in self.nodeList: # 
-                if node.parent is not None:
-                    plt.plot([node.x, self.nodeList[node.parent].x], [
-                        node.y, self.nodeList[node.parent].y], "-g")
-
-            for (ox, oy, size) in self.obstacleList:
-                plt.plot(ox, oy, "ok", ms=30 * size)
-                
-                plt.plot(self.start.x, self.start.y, "xr")
-                plt.plot(self.end.x, self.end.y, "xr")
-                plt.axis([-2, 15, -2, 15])
-                plt.grid(True)
-                plt.pause(0.01)
 
 class Point () :
 
