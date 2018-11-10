@@ -13,7 +13,7 @@ class rrt():
             goal_Point, # coordinates of goal Point
             obstacle_List, # List of obstacle ( coordinates and radii )
             randomization_Constraints, # List of min/max constraints for random Point Sampling
-            growth_Factor = .5, # Amount by which a new branch will grow towards Sample Point
+            growth_Factor = .2, # Amount by which a new branch will grow towards Sample Point
             goal_SampleRate = 2.5) : # probability of sampling the Goal point
 
         self.start_Point = Point ( start_Point[0], start_Point[1] )
@@ -51,28 +51,31 @@ class rrt():
             if self.getGoalStatus(new_Point) == True :
                 self.reached_Goal = True
                 self.drawRRT()
-
             # Trace backwards towards start Point for solution path
             # 8) traceFinalPath() , returns list of Point coordinate pairs from endPoint to startPoint
             # self.solution_Path = traceFinalPath( point_List)
     
     ######## METHODS
     def drawRRT(self) :
+        ax = plt.cla()
         plt.clf()
         for point in self.point_List :
             if point.preceding_Point_Index is not None:
                 plt.plot( [ point.x, self.point_List[point.preceding_Point_Index].x],
                         [point.y, self.point_List[point.preceding_Point_Index].y], "-r")
 
+        fig = plt.gcf()
+        ax = fig.gca()
         for ( obstacle_x, obstacle_y, radius ) in self.obstacle_List :
-            plt.plot( obstacle_x, obstacle_y, "o", radius )
+            ax.add_artist(plt.Circle( (obstacle_x, obstacle_y) , radius , color='b'))
+            
 
-        plt.plot( self.start_Point.x, self.start_Point.y, "-sg", 3)
-        plt.plot( self.goal_Point.x, self.goal_Point.y, "-sg", 4)
+        plt.plot( self.start_Point.x, self.start_Point.y, "-xb", label='START')
+        plt.plot( self.goal_Point.x, self.goal_Point.y, "-xb", label='GOAL')
         plt.pause( .1 )
         plt.show()
 
-    def traceFinalPath(self) :
+    def traceFinalPath(self) : # work in progress
 
         lines = []
         solution_Points = [self.point_List[-1]]
