@@ -13,11 +13,11 @@ class rrt():
             goal_Point, # coordinates of goal Point
             obstacle_List, # List of obstacle ( coordinates and radii )
             randomization_Constraints, # List of min/max constraints for random Point Sampling
-            growth_Factor , # Amount by which a new branch will grow towards Sample Point
-            goal_SampleRate = 5) : # probability of sampling the Goal point
+            growth_Factor = .5, # Amount by which a new branch will grow towards Sample Point
+            goal_SampleRate = 2.5) : # probability of sampling the Goal point
 
         self.start_Point = Point ( start_Point[0], start_Point[1] )
-        self.goal_Point = Point ( goal_Point[0], start_Point[1] )
+        self.goal_Point = Point ( goal_Point[0], goal_Point[1] )
         self.min_Rand_Constraint = randomization_Constraints[0]
         self.max_Rand_Constraint = randomization_Constraints[1]
         self.growth_Factor = growth_Factor
@@ -28,14 +28,16 @@ class rrt():
         # 1) Initialize PointList with start_Position
         self.point_List = [self.start_Point]
         # WHILE LOOP
-        reached_Goal = False
-        while ( reached_Goal == False ) :
+        self.windowCount = 0
+        self.reached_Goal = False
+        while ( self.reached_Goal == False ) :
             # 2) generateRandomSample (), returns random sample Point or biased Point
             sample_Point = self.generateRandomSamplePoint()
             # 3) getClosestPointIndex( sample Point  ), returns index of Point in pointList closest to given sample point
             closest_Point_Index = self.getClosestPointIndex(self.point_List, sample_Point)
             # 4) growTree( new_Point , closest_Point_Index ) , creates new Point and grows tree at closes_Point_index in point_List
             new_Point = self.growTree(self.point_List, sample_Point, closest_Point_Index)
+            # 4a) refresh RRT figure and draw new tree
             # 5) collisionDetected ( nearby Point ), returns boolean based on check if nearby point collides with osbtacle
             # 5a) If 5 is true , next loop iteration 
             # 5b) If 5 is false, proceed to 6 
@@ -44,24 +46,41 @@ class rrt():
             # 6) add new_Point to point_List
             self.point_List.append(new_Point)
             # 7) goalStatus( new_Point) , returns boolean based on check of distance from goal_Point to new_Point
-            # 7a) If 7 is true, break while loop
+            # 7a) If 7 is true, break while loop & print rrt graph
             # 7b) if 7 is false, next loop iteration
             if self.getGoalStatus(new_Point) == True :
-                reached_Goal = True
+                self.reached_Goal = True
+                self.drawRRT()
 
             # Trace backwards towards start Point for solution path
             # 8) traceFinalPath() , returns list of Point coordinate pairs from endPoint to startPoint
             # self.solution_Path = traceFinalPath( point_List)
     
     ######## METHODS
+    def drawRRT(self) :
+        plt.clf()
+        for point in self.point_List :
+            if point.preceding_Point_Index is not None:
+                plt.plot( [ point.x, self.point_List[point.preceding_Point_Index].x],
+                        [point.y, self.point_List[point.preceding_Point_Index].y], "-r")
+
+        for ( obstacle_x, obstacle_y, radius ) in self.obstacle_List :
+            plt.plot( obstacle_x, obstacle_y, "o", radius )
+
+        plt.plot( self.start_Point.x, self.start_Point.y, "-sg", 3)
+        plt.plot( self.goal_Point.x, self.goal_Point.y, "-sg", 4)
+        plt.pause( .1 )
+        plt.show()
+
     def traceFinalPath(self) :
+
         lines = []
         solution_Points = [self.point_List[-1]]
         # solution_Coordinate_Pairs = [ [point_List[-1].x, point_List[-1].y] ]
         for this_Point in solution_Points :
             if this_Point.preceding_Point_Index != None :
-                lines.append( [ ( this_Point.x , this_Point.y ),
-                        ( self.point_List[this_Point.preceding_Point_Index].x , self.point_List[this_Point.preceding_Point_Index].y )] )
+                lines.append( ( ( this_Point.x , this_Point.y ),
+                        ( self.point_List[this_Point.preceding_Point_Index].x , self.point_List[this_Point.preceding_Point_Index].y )) )
                 # plt.show()
                 solution_Points.append( self.point_List[ this_Point.preceding_Point_Index])
             # solution_Coordinate_Pairs.append( [ point_List(this_Point.preceding_Point_Index).x , point_List( this_Point.preceding_Point_Index).y ] )
@@ -77,8 +96,11 @@ class rrt():
     def getGoalStatus(self, new_Point) :
         dx = new_Point.x - self.goal_Point.x
         dy = new_Point.y - self.goal_Point.y
-        distance = math.sqrt( dx**2 + dy**2 )
-        
+        distance =math.sqrt ( dx**2 + dy**2 )
+
+        print("X :", new_Point.x)
+        print("Y :", new_Point.y)
+
         if distance <= self.growth_Factor :
             print("True")
             return True
@@ -100,9 +122,6 @@ class rrt():
         new_Point = Point ( point_List[closest_Point_Index].x + self.growth_Factor * math.cos( growth_Angle), 
                 point_List[closest_Point_Index].y + self.growth_Factor * math.sin( growth_Angle))
         new_Point.preceding_Point_Index = closest_Point_Index
-
-        print("X :", new_Point.x)
-        print("Y :", new_Point.y)
 
         return new_Point
 
