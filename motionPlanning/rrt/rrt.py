@@ -13,7 +13,7 @@ class rrt():
             goal_Point, # coordinates of goal Point
             obstacle_List, # List of obstacle ( coordinates and radii )
             randomization_Constraints, # List of min/max constraints for random Point Sampling
-            growth_Factor = .2, # Amount by which a new branch will grow towards Sample Point
+            growth_Factor = .5, # Amount by which a new branch will grow towards Sample Point
             goal_SampleRate = 2.5) : # probability of sampling the Goal point
 
         self.start_Point = Point ( start_Point[0], start_Point[1] )
@@ -118,7 +118,7 @@ class rrt():
             distance_to_Obstacle = math.sqrt( dx**2 + dy**2)
             if distance_to_Obstacle <= obstacle_Radius :
                 return True
-            else : return False
+        return False
 
     def growTree(self, point_List, sample_Point, closest_Point_Index) :
         growth_Angle = math.atan2((sample_Point.y - point_List[closest_Point_Index].y) , (sample_Point.x - point_List[closest_Point_Index].x))
