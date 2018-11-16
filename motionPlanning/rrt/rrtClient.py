@@ -1,15 +1,23 @@
 #!/usr/bin/python3
 from rrt import *
 
-constraints = [ 0.0 , 11.0 ]
+constraints = [ 0.0, 11.0 ]
+
+obstacleConstraints = [ 2.0, 10.0 ]
+
+obstacleWall = [ ( 5.0 , 9.0 , 2.0 ),
+        (5.0 , 6.0 , 1.0),
+        (5.0 , 4.0 , 1.0),
+        (7.0 , 4.0 , 1.0),
+        (9.0 , 3.0 , 1.0)]
+
+randomObstacles =  [ ( random.uniform( obstacleConstraints[0], obstacleConstraints[1]), random.uniform( obstacleConstraints[0], obstacleConstraints[1] ), 1.0 ) , 
+        ( random.uniform( obstacleConstraints[0], obstacleConstraints[1]), random.uniform( obstacleConstraints[0], obstacleConstraints[1] ), 1.5 ) , 
+        ( random.uniform( obstacleConstraints[0], obstacleConstraints[1]), random.uniform( obstacleConstraints[0], obstacleConstraints[1]), 1 ) ]
 
 myRRT = rrt( [ 1.0 , 1.0 ] ,
         [ 10.0 , 12.0 ] ,
-        [ ( 5.0 , 5.0 , 2.0 ),
-            ( random.uniform( constraints[0], constraints[1]), random.uniform( constraints[0], constraints[1] ), 1.0 ) ,
-            ( random.uniform( constraints[0], constraints[1]), random.uniform( constraints[0], constraints[1] ), 1.5 ) ,
-            ( random.uniform( constraints[0], constraints[1]), random.uniform( constraints[0], constraints[1]), 1 ) ],
-        constraints )
+        randomObstacles ,
+            constraints )
 
 myRRT.computeSolutionPath()
-myRRT.traceFinalPath()

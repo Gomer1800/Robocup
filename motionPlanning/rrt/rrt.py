@@ -13,8 +13,8 @@ class rrt():
             goal_Point, # coordinates of goal Point
             obstacle_List, # List of obstacle ( x, y, radius )
             randomization_Constraints, # List of min/max constraints for random Point Sampling
-            growth_Factor = 1, # Amount by which a new branch will grow towards Sample Point
-            goal_SampleRate = 2.5) : # probability of sampling the Goal point
+            growth_Factor = .99, # Amount by which a new branch will grow towards Sample Point
+            goal_SampleRate = 5) : # probability of sampling the Goal point
 
         self.start_Point = Point ( start_Point[0], start_Point[1] )
         self.goal_Point = Point ( goal_Point[0], goal_Point[1] )
@@ -27,6 +27,7 @@ class rrt():
     def computeSolutionPath(self) :
         # 1) Initialize PointList with start_Position
         point_List = [self.start_Point]
+        fig = plt.figure()
         # WHILE LOOP
         self.windowCount = 0
         self.reached_Goal = False
@@ -45,47 +46,47 @@ class rrt():
                 continue 
             # 6) add new_Point to point_List
             point_List.append(new_Point)
+            self.drawRRT ( fig , point_List )
             # 7) goalStatus( new_Point) , returns boolean based on check of distance from goal_Point to new_Point
             # 7a) If 7 is true, break while loop & print rrt graph
             # 7b) if 7 is false, next loop iteration
-            if self.getGoalStatus(new_Point) == True :
+            if self.getGoalStatus(new_Point) :
                 self.reached_Goal = True
-                self.drawRRT(point_List)
-            # Trace backwards towards start Point for solution path
-            # 8) traceFinalPath() , returns list of Point coordinate pairs from endPoint to startPoint
-            # self.solution_Path = traceFinalPath( point_List)
+
+        # Trace backwards towards start Point for solution path
+        # 8) traceFinalPath() , returns list of Point coordinate pairs from endPoint to startPoint
+        self.traceFinalPath(fig ,point_List)
+        # self.solution_Path = traceFinalPath( point_List)
     
     ######## METHODS
-    def drawRRT(self, point_List) :
-        ax = plt.cla()
-        plt.clf()
+    def drawRRT(self, fig, point_List) :
+        fig.clf()
         for point in point_List :
-            if point.preceding_Point_Index is not None:
+            if point.preceding_Point_Index is not None :
                 plt.plot( [ point.x, point_List[point.preceding_Point_Index].x],
                         [point.y, point_List[point.preceding_Point_Index].y], "-r")
-
+        
         fig = plt.gcf()
-        ax = fig.gca()
+        ax = fig.gca() 
         for ( obstacle_x, obstacle_y, radius ) in self.obstacle_List :
             ax.add_artist(plt.Circle( (obstacle_x, obstacle_y) , radius , color='b'))
             
-        self.traceFinalPath(point_List)
-
         plt.plot( self.start_Point.x, self.start_Point.y, "-xb", label='START')
         plt.plot( self.goal_Point.x, self.goal_Point.y, "-xb", label='GOAL')
-        plt.pause( .1 )
-        plt.show()
+        fig.show()
+        plt.pause( 0.025 )
 
-    def traceFinalPath(self, point_List) : # work in progress
+    def traceFinalPath(self, fig ,point_List) : # work in progress
         solution_Points = [point_List[-1]]
         # solution_Coordinate_Pairs = [ [point_List[-1].x, point_List[-1].y] ]
         for this_Point in solution_Points :
             if this_Point.preceding_Point_Index != None :
                 plt.plot( [ this_Point.x , point_List[this_Point.preceding_Point_Index].x ],
                         [ this_Point.y , point_List[this_Point.preceding_Point_Index].y ], "-b" )
-                # plt.show()
                 solution_Points.append( point_List[ this_Point.preceding_Point_Index])
-        
+
+        plt.show()
+
     def getGoalStatus(self, new_Point) :
         dx = new_Point.x - self.goal_Point.x
         dy = new_Point.y - self.goal_Point.y
