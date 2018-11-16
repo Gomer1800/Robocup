@@ -17,7 +17,7 @@ randomObstacles =  [ ( random.uniform( obstacleConstraints[0], obstacleConstrain
 
 myRRT = rrt( [ 1.0 , 1.0 ] ,
         [ 10.0 , 12.0 ] ,
-        randomObstacles ,
+        obstacleWall ,
             constraints )
 
 myRRT.computeSolutionPath()
