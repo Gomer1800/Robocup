@@ -13,8 +13,8 @@ class rrt():
             goal_Point, # coordinates of goal Point
             obstacle_List, # List of obstacle ( x, y, radius )
             randomization_Constraints, # List of min/max constraints for random Point Sampling
-            growth_Factor = .25, # Amount by which a new branch will grow towards Sample Point
-            goal_SampleRate = 99) : # probability of sampling the Goal point
+            growth_Factor = 1, # Amount by which a new branch will grow towards Sample Point
+            goal_SampleRate = 10) : # probability of sampling the Goal point
 
         self.start_Point = Point ( start_Point[0], start_Point[1] )
         self.goal_Point = Point ( goal_Point[0], goal_Point[1] )
@@ -29,7 +29,7 @@ class rrt():
         point_List = [self.start_Point]
         fig = plt.figure()
         # WHILE LOOP
-        self.windowCount = 0
+        # self.windowCount = 0
         self.reached_Goal = False
         while ( self.reached_Goal == False ) :
             # 2) generateRandomSample (), returns random sample Point or biased Point
@@ -37,7 +37,7 @@ class rrt():
             # 3) getClosestPointIndex( sample Point  ), returns index of Point in pointList closest to given sample point
             closest_Point_Index = self.getClosestPointIndex(point_List, sample_Point)
             # 4) growTree( new_Point , sample_Point, closest_Point_Index ) , creates new Point and grows tree at closest Point to sample in point_List
-            new_Point = self.growTree(point_List, sample_Point, closest_Point_Index)
+            new_Point = self.growTree(fig, point_List, sample_Point, closest_Point_Index)
             # 4a) refresh RRT figure and draw new tree
             # 5) collisionDetected ( nearby Point ), returns boolean based on check if nearby point collides with osbtacle
             # 5a) If 5 is true , next loop iteration 
@@ -46,7 +46,7 @@ class rrt():
                 continue 
             # 6) add new_Point to point_List
             point_List.append(new_Point)
-            self.drawRRT ( fig , point_List )
+            self.drawRRT ( fig , sample_Point, point_List )
             # 7) goalStatus( new_Point) , returns boolean based on check of distance from goal_Point to new_Point
             # 7a) If 7 is true, break while loop & print rrt graph
             # 7b) if 7 is false, next loop iteration
@@ -58,8 +58,11 @@ class rrt():
         # self.solution_Path = traceFinalPath( point_List)
     
     ######## METHODS
-    def drawRRT(self, fig, point_List) :
+    def drawRRT(self, fig, sample_Point, point_List) :
         fig.clf()
+        # Animate Sampling
+        plt.plot( sample_Point.x, sample_Point.y, "k*")
+        # Animate RRT
         for point in point_List :
             if point.preceding_Point_Index is not None :
                 plt.plot( [ point.x, point_List[point.preceding_Point_Index].x],
@@ -69,9 +72,10 @@ class rrt():
         ax = fig.gca() 
         for ( obstacle_x, obstacle_y, radius ) in self.obstacle_List :
             ax.add_artist(plt.Circle( (obstacle_x, obstacle_y) , radius , color='b'))
-            
-        plt.plot( self.start_Point.x, self.start_Point.y, "-xb", label='START')
-        plt.plot( self.goal_Point.x, self.goal_Point.y, "-xb", label='GOAL')
+        
+        plt.plot( self.start_Point.x, self.start_Point.y, "-xb", linewidth=2, markersize=12)
+        plt.plot( self.goal_Point.x, self.goal_Point.y, "-xb",  linewidth=2, markersize=12)
+        plt.axis( [-1, 12, 0, 12] )
         fig.show()
         plt.pause( 0.01 )
 
@@ -114,11 +118,12 @@ class rrt():
             dx = point.x - new_Point.x
             dy = point.y - new_Point.y
             distance_to_Other_Point = math.sqrt( dx**2 + dy**2)
-            if distance_to_Other_Point <= .25 : 
+            if distance_to_Other_Point <= self.growth_Factor : 
                 return True
         return False
 
-    def growTree(self, point_List, sample_Point, closest_Point_Index) :
+    def growTree(self, fig, point_List, sample_Point, closest_Point_Index) :
+        # grow branch
         growth_Angle = math.atan2((sample_Point.y - point_List[closest_Point_Index].y) , (sample_Point.x - point_List[closest_Point_Index].x))
         new_Point = Point ( point_List[closest_Point_Index].x + self.growth_Factor * math.cos( growth_Angle), 
                 point_List[closest_Point_Index].y + self.growth_Factor * math.sin( growth_Angle))
