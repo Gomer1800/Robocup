@@ -24,7 +24,7 @@ class rrt():
         self.goal_SampleRate = goal_SampleRate
         self.obstacle_List = obstacle_List
         
-    def computeSolutionPath(self) :
+    def computeSolutionPath(self, draw = False) :
         # 1) Initialize PointList with start_Position
         point_List = [self.start_Point]
         # WHILE LOOP
@@ -50,7 +50,8 @@ class rrt():
             # 7b) if 7 is false, next loop iteration
             if self.getGoalStatus(new_Point) == True :
                 self.reached_Goal = True
-                self.drawRRT(point_List)
+                if draw == True:
+                    self.drawRRT(point_List)
             # Trace backwards towards start Point for solution path
             # 8) traceFinalPath() , returns list of Point coordinate pairs from endPoint to startPoint
             # self.solution_Path = traceFinalPath( point_List)
